@@ -5,6 +5,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoder;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +19,8 @@ import java.util.function.Function;
 
 @Component
 public class JwtService {
+
+    Logger logger = LoggerFactory.getLogger(JwtService.class);
 
     private String secreteKey="";
 
@@ -37,7 +41,7 @@ public class JwtService {
                 .add(claims)
                 .subject(username)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis()+(60000)))
+                .expiration(new Date(System.currentTimeMillis()+(60000))) // valid for 1 sec
                 .and()
                 .signWith(getKey())
                 .compact();
@@ -68,6 +72,8 @@ public class JwtService {
 
     public boolean validateToken(String token, UserDetails userDetails) {
         final String userName = extractUserName(token);
+        logger.debug("username",String.valueOf(userName.equals(userDetails.getUsername())));
+        logger.debug("status",String.valueOf(!isTokenExpired(token)));
         return (userName.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
