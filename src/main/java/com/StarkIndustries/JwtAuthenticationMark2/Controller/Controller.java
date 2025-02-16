@@ -7,6 +7,7 @@ import com.StarkIndustries.JwtAuthenticationMark2.Service.EmailService;
 import com.StarkIndustries.JwtAuthenticationMark2.Service.JwtService;
 import com.StarkIndustries.JwtAuthenticationMark2.Service.MyUserDetailsService;
 import com.StarkIndustries.JwtAuthenticationMark2.Service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -26,7 +27,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.DataInput;
 import java.security.SignatureException;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +51,10 @@ public class Controller {
 
     @Autowired
     public EmailService emailService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
 
     @GetMapping("/greetings")
     public ResponseEntity<String> greetings(){
@@ -119,6 +126,20 @@ public class Controller {
             return ResponseEntity.status(HttpStatus.OK).body("Email verified Successfully!!");
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+
+    @PostMapping("/get-both")
+    public ResponseEntity<?> getBoth(@RequestParam("user") String user, @RequestParam("image")MultipartFile multipartFile){
+
+        try{
+            Users users = this.objectMapper.readValue(user,Users.class) ;
+            logger.info("user:{}",users);
+            logger.info("file name: {}", multipartFile.getOriginalFilename());
+            return ResponseEntity.status(HttpStatus.OK).body(users+" "+multipartFile.getOriginalFilename());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
 }
