@@ -9,7 +9,6 @@ import java.util.logging.Logger;
 public class JwtAuthenticationMark2Application {
 
 	public static void main(String[] args) {
-		
 		SpringApplication.run(JwtAuthenticationMark2Application.class, args);
 	}
 

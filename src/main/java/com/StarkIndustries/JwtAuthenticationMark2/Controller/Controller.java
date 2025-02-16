@@ -1,5 +1,6 @@
 package com.StarkIndustries.JwtAuthenticationMark2.Controller;
 
+import com.StarkIndustries.JwtAuthenticationMark2.Models.PasswordModel;
 import com.StarkIndustries.JwtAuthenticationMark2.Models.Users;
 import com.StarkIndustries.JwtAuthenticationMark2.Service.JwtService;
 import com.StarkIndustries.JwtAuthenticationMark2.Service.MyUserDetailsService;
@@ -78,6 +79,15 @@ public class Controller {
         if(!userService.getUsers().isEmpty())
             return ResponseEntity.status(HttpStatus.OK).body(userService.getUsers());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+
+    @PutMapping("/update-password")
+    public ResponseEntity<Users> updatePassword(@RequestBody PasswordModel passwordModel){
+        Users users = userService.updatePassword(passwordModel);
+        System.out.println(passwordModel);
+        if(users!=null)
+            return ResponseEntity.status(HttpStatus.OK).body(users);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
 }

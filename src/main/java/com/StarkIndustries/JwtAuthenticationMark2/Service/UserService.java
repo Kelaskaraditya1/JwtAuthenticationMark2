@@ -1,5 +1,6 @@
 package com.StarkIndustries.JwtAuthenticationMark2.Service;
 
+import com.StarkIndustries.JwtAuthenticationMark2.Models.PasswordModel;
 import com.StarkIndustries.JwtAuthenticationMark2.Models.Users;
 import com.StarkIndustries.JwtAuthenticationMark2.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,10 @@ public class UserService {
     @Autowired
     public UserRepository userRepository;
 
+    @Autowired
+    public BCryptPasswordEncoder bCryptPasswordEncoder;
+
+
     public String login(Users users){
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(users.getUsername(),users.getPassword()));
                 if(authentication.isAuthenticated()&&userRepository.findByUsername(users.getUsername())!=null)
@@ -33,10 +38,9 @@ public class UserService {
 
     public boolean signup(Users users){
 
-        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(12);
 
         if(userRepository.findByUsername(users.getUsername())==null){
-            users.setPassword(bCryptPasswordEncoder.encode(users.getPassword()));
+            users.setPassword(this.bCryptPasswordEncoder.encode(users.getPassword()));
             userRepository.save(users);
             return true;
         }
@@ -45,5 +49,17 @@ public class UserService {
 
     public List<Users> getUsers(){
         return userRepository.findAll();
+    }
+
+    public Users updatePassword(PasswordModel passwordModel){
+        Users users = userRepository.findByUsername(passwordModel.getUsername());
+        if(users!=null){
+            if(this.bCryptPasswordEncoder.matches(passwordModel.getPassword(), users.getPassword())){
+                users.setPassword(bCryptPasswordEncoder.encode(passwordModel.getNewPassword()));
+                userRepository.save(users);
+                return users;
+            }
+        }
+        return null;
     }
 }
