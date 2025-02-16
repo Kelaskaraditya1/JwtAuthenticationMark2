@@ -1,18 +1,23 @@
 package com.StarkIndustries.JwtAuthenticationMark2.Controller;
 
+import com.StarkIndustries.JwtAuthenticationMark2.Keys.Keys;
 import com.StarkIndustries.JwtAuthenticationMark2.Models.PasswordModel;
 import com.StarkIndustries.JwtAuthenticationMark2.Models.Users;
+import com.StarkIndustries.JwtAuthenticationMark2.Service.EmailService;
 import com.StarkIndustries.JwtAuthenticationMark2.Service.JwtService;
 import com.StarkIndustries.JwtAuthenticationMark2.Service.MyUserDetailsService;
 import com.StarkIndustries.JwtAuthenticationMark2.Service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.server.Session;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.User;
@@ -25,6 +30,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import java.security.SignatureException;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 @RestController
 public class Controller {
@@ -39,6 +45,9 @@ public class Controller {
 
     @Autowired
     public MyUserDetailsService myUserDetailsService;
+
+    @Autowired
+    public EmailService emailService;
 
     @GetMapping("/greetings")
     public ResponseEntity<String> greetings(){
@@ -88,6 +97,28 @@ public class Controller {
         if(users!=null)
             return ResponseEntity.status(HttpStatus.OK).body(users);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+    @GetMapping("/verify-email/{email}")
+    public ResponseEntity<String> sendEmailVerificationOtp(@PathVariable String email,HttpSession session){
+        Random random = new Random();
+        int otp=1000+random.nextInt(9000);
+        session.setAttribute(Keys.OTP,otp);
+        session.setMaxInactiveInterval(300);
+        if(emailService.sendEmail(otp,email))
+            return ResponseEntity.status(HttpStatus.OK).body("Email sent Successfully!!");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to sent email!!");
+    }
+
+    @GetMapping("/verify-email-with-otp/{otp}")
+    public ResponseEntity<String> verifyEmail(@PathVariable int otp,HttpSession session){
+        int generatedOtp = Integer.parseInt(session.getAttribute(Keys.OTP).toString());
+        System.out.println(generatedOtp);
+        if(generatedOtp==otp){
+            session.removeAttribute(Keys.OTP);
+            return ResponseEntity.status(HttpStatus.OK).body("Email verified Successfully!!");
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
 }
