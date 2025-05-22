@@ -78,16 +78,17 @@ public class Controller {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to Signup!!");
     }
 
-    @PostMapping("/validate-token")
-    public ResponseEntity<Boolean> validateToken(@RequestParam("Authorization") String jwtToken){
-        if(!jwtToken.isEmpty() && jwtToken.startsWith("Bearer ")){
-            String token = jwtToken.substring(7);
-            String username = jwtService.extractUserName(token);
-            UserDetails userDetails = new MyUserDetailsService().loadUserByUsername(username);
-            if(jwtService.validateToken(token,userDetails))
-                return ResponseEntity.status(HttpStatus.OK).body(true);
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    @GetMapping("/validate-token")
+    public ResponseEntity<Boolean> validateToken(){
+//        if(!jwtToken.isEmpty() && jwtToken.startsWith("Bearer ")){
+//            String token = jwtToken.substring(7);
+//            String username = jwtService.extractUserName(token);
+//            UserDetails userDetails = new MyUserDetailsService().loadUserByUsername(username);
+//            if(jwtService.validateToken(token,userDetails))
+//                return ResponseEntity.status(HttpStatus.OK).body(true);
+//        }
+//        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @GetMapping("/users")
